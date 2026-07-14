@@ -2,114 +2,132 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Leaflet CSS */
+@import "leaflet/dist/leaflet.css";
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
 body {
     margin: 0;
-    font-family:
-        -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-        "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-        sans-serif;
+    font-family: 'Figtree', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
 }
 
-code {
-    font-family:
-        source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
-}
+h1, h2, h3, h4, h5 { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.01em; }
+code, .mono, .case-id { font-family: 'IBM Plex Mono', monospace; }
 
 @layer base {
     :root {
-        --background: 0 0% 100%;
-        --foreground: 0 0% 3.9%;
+        --background: 36 33% 98%;
+        --foreground: 222 22% 12%;
         --card: 0 0% 100%;
-        --card-foreground: 0 0% 3.9%;
+        --card-foreground: 222 22% 12%;
         --popover: 0 0% 100%;
-        --popover-foreground: 0 0% 3.9%;
-        --primary: 0 0% 9%;
-        --primary-foreground: 0 0% 98%;
-        --secondary: 0 0% 96.1%;
-        --secondary-foreground: 0 0% 9%;
-        --muted: 0 0% 96.1%;
-        --muted-foreground: 0 0% 45.1%;
-        --accent: 0 0% 96.1%;
-        --accent-foreground: 0 0% 9%;
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 89.8%;
-        --input: 0 0% 89.8%;
-        --ring: 0 0% 3.9%;
-        --chart-1: 12 76% 61%;
-        --chart-2: 173 58% 39%;
-        --chart-3: 197 37% 24%;
-        --chart-4: 43 74% 66%;
-        --chart-5: 27 87% 67%;
-        --radius: 0.5rem;
+        --popover-foreground: 222 22% 12%;
+        --primary: 196 78% 34%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 36 20% 94%;
+        --secondary-foreground: 222 22% 12%;
+        --muted: 36 18% 92%;
+        --muted-foreground: 215 16% 38%;
+        --accent: 24 88% 56%;
+        --accent-foreground: 0 0% 100%;
+        --destructive: 0 72% 52%;
+        --destructive-foreground: 0 0% 100%;
+        --border: 30 14% 86%;
+        --input: 30 14% 86%;
+        --ring: 196 78% 34%;
+        --success: 152 52% 36%;
+        --success-foreground: 0 0% 100%;
+        --warning: 38 92% 50%;
+        --warning-foreground: 222 22% 12%;
+        --info: 206 88% 40%;
+        --info-foreground: 0 0% 100%;
+        --chart-1: 196 78% 34%;
+        --chart-2: 24 88% 56%;
+        --chart-3: 152 52% 36%;
+        --chart-4: 38 92% 50%;
+        --chart-5: 0 72% 52%;
+        --radius: 0.75rem;
     }
     .dark {
-        --background: 0 0% 3.9%;
+        --background: 222 22% 8%;
         --foreground: 0 0% 98%;
-        --card: 0 0% 3.9%;
+        --card: 222 22% 10%;
         --card-foreground: 0 0% 98%;
-        --popover: 0 0% 3.9%;
+        --popover: 222 22% 10%;
         --popover-foreground: 0 0% 98%;
-        --primary: 0 0% 98%;
-        --primary-foreground: 0 0% 9%;
-        --secondary: 0 0% 14.9%;
+        --primary: 196 78% 44%;
+        --primary-foreground: 222 22% 10%;
+        --secondary: 222 18% 16%;
         --secondary-foreground: 0 0% 98%;
-        --muted: 0 0% 14.9%;
-        --muted-foreground: 0 0% 63.9%;
-        --accent: 0 0% 14.9%;
-        --accent-foreground: 0 0% 98%;
-        --destructive: 0 62.8% 30.6%;
+        --muted: 222 18% 16%;
+        --muted-foreground: 215 18% 70%;
+        --accent: 24 88% 58%;
+        --accent-foreground: 222 22% 10%;
+        --destructive: 0 62% 42%;
         --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 14.9%;
-        --input: 0 0% 14.9%;
-        --ring: 0 0% 83.1%;
-        --chart-1: 220 70% 50%;
-        --chart-2: 160 60% 45%;
-        --chart-3: 30 80% 55%;
-        --chart-4: 280 65% 60%;
-        --chart-5: 340 75% 55%;
+        --border: 222 16% 18%;
+        --input: 222 16% 18%;
+        --ring: 196 78% 44%;
+        --success: 152 52% 42%;
+        --success-foreground: 222 22% 10%;
+        --warning: 38 92% 56%;
+        --warning-foreground: 222 22% 10%;
+        --info: 206 88% 52%;
+        --info-foreground: 222 22% 10%;
+        --chart-1: 196 78% 55%;
+        --chart-2: 24 88% 62%;
+        --chart-3: 152 52% 55%;
+        --chart-4: 38 92% 60%;
+        --chart-5: 0 72% 60%;
     }
 }
 
 @layer base {
-    * {
-        @apply border-border;
-    }
-    body {
-        @apply bg-background text-foreground;
-    }
+    * { @apply border-border; }
+    body { @apply bg-background text-foreground; }
+    button { transition: background-color 160ms ease, transform 120ms ease, box-shadow 160ms ease; }
+    a { transition: color 160ms ease; }
 }
 
-@layer base {
-    [data-debug-wrapper="true"] {
-        display: contents !important;
-    }
+/* Custom Leaflet marker colors */
+.ulfn-marker { display: block; width: 28px; height: 28px; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.25); border: 3px solid #fff; }
+.ulfn-marker-lost { background: #E23D3D; }
+.ulfn-marker-found { background: #1F9D63; }
+.ulfn-marker-user { background: #2B6DEB; }
+.ulfn-marker-match { background: #7C3AED; }
+.ulfn-marker-selected { background: #F59E0B; box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.25); }
 
-    [data-debug-wrapper="true"] > * {
-        margin-left: inherit;
-        margin-right: inherit;
-        margin-top: inherit;
-        margin-bottom: inherit;
-        padding-left: inherit;
-        padding-right: inherit;
-        padding-top: inherit;
-        padding-bottom: inherit;
-        column-gap: inherit;
-        row-gap: inherit;
-        gap: inherit;
-        border-left-width: inherit;
-        border-right-width: inherit;
-        border-top-width: inherit;
-        border-bottom-width: inherit;
-        border-left-style: inherit;
-        border-right-style: inherit;
-        border-top-style: inherit;
-        border-bottom-style: inherit;
-        border-left-color: inherit;
-        border-right-color: inherit;
-        border-top-color: inherit;
-        border-bottom-color: inherit;
-    }
+.leaflet-container { background: hsl(var(--muted)); font-family: 'Figtree', sans-serif; }
+.marker-cluster-small, .marker-cluster-medium, .marker-cluster-large { background-color: rgba(196, 78, 44, 0.15); }
+.marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div {
+    background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); font-weight: 600;
 }
+
+.ulfn-grain::before {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none; opacity: 0.4; mix-blend-mode: overlay;
+    background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+    background-size: 3px 3px;
+}
+
+.hero-hope {
+    background:
+        radial-gradient(1200px 600px at 20% 10%, rgba(34, 211, 238, 0.14), transparent 60%),
+        radial-gradient(900px 500px at 85% 0%, rgba(251, 146, 60, 0.10), transparent 55%);
+}
+
+.dark .hero-hope {
+    background:
+        radial-gradient(900px 500px at 15% 0%, rgba(34, 211, 238, 0.12), transparent 60%),
+        radial-gradient(900px 500px at 85% 10%, rgba(251, 146, 60, 0.08), transparent 55%);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: hsl(var(--muted)); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
