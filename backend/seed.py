@@ -1,65 +1,92 @@
-"""Seed demo/test users on startup so testing agent can log in without OAuth."""
+"""Seed demo/test users into Supabase Auth so the app is testable.
+
+Also verifies the schema is present. If tables don't exist we print
+instructions to run supabase/migrations/*.sql in the Supabase SQL Editor.
+"""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+import logging
+from typing import Optional
 from uuid import uuid4
 
-import bcrypt
+from deps import sb
 
-from deps import db
-
-
-def _hash(pw: str) -> str:
-    return bcrypt.hashpw(pw.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-
+logger = logging.getLogger("ulfn.seed")
 
 DEMO_ACCOUNTS = [
-    {"email": "demo@ulfn.app", "password": "Demo1234!", "name": "Demo User", "role": "user", "verified": False},
-    {"email": "ngo@ulfn.app", "password": "Demo1234!", "name": "HopePaws NGO", "role": "ngo", "verified": True, "org_name": "HopePaws Rescue"},
-    {"email": "police@ulfn.app", "password": "Demo1234!", "name": "Officer Kim", "role": "police", "verified": True, "org_name": "Metro Police - Central"},
-    {"email": "admin@ulfn.app", "password": "Demo1234!", "name": "Platform Admin", "role": "admin", "verified": True},
+    {"email": "demo@ulfn.app",   "password": "Demo1234!", "name": "Demo User",       "role": "user",   "verified": False, "org_name": None},
+    {"email": "ngo@ulfn.app",    "password": "Demo1234!", "name": "HopePaws NGO",    "role": "ngo",    "verified": True,  "org_name": "HopePaws Rescue Mumbai"},
+    {"email": "police@ulfn.app", "password": "Demo1234!", "name": "Officer Kumar",   "role": "police", "verified": True,  "org_name": "Mumbai Police - Andheri"},
+    {"email": "admin@ulfn.app",  "password": "Demo1234!", "name": "Platform Admin",  "role": "admin",  "verified": True,  "org_name": None},
 ]
+
+
+async def verify_schema() -> bool:
+    """Return True when schema is present and reachable."""
+    try:
+        sb.table("profiles").select("user_id", count="exact").limit(1).execute()
+        return True
+    except Exception as exc:
+        logger.error("\n" + "=" * 70)
+        logger.error("ULFN schema not found in Supabase. Please run migrations:")
+        logger.error("  1) Open your Supabase project → SQL Editor → New Query")
+        logger.error("  2) Paste /app/supabase/migrations/00_schema.sql and Run")
+        logger.error("  3) Paste /app/supabase/migrations/01_storage.sql and Run")
+        logger.error(f"Error was: {exc}")
+        logger.error("=" * 70 + "\n")
+        return False
+
+
+def _find_user_by_email(email: str) -> Optional[dict]:
+    # supabase-py admin list_users returns paginated users
+    try:
+        page = 1
+        while page < 20:
+            users = sb.auth.admin.list_users(page=page, per_page=100)
+            if not users:
+                return None
+            for u in users:
+                if (getattr(u, "email", None) or "").lower() == email.lower():
+                    return {"id": u.id, "email": u.email}
+            if len(users) < 100:
+                return None
+            page += 1
+    except Exception:
+        return None
+    return None
 
 
 async def seed_users():
     for acc in DEMO_ACCOUNTS:
-        existing = await db.users.find_one({"email": acc["email"]}, {"_id": 0})
-        if existing:
-            # Ensure the demo password matches (recover from any drift).
-            await db.users.update_one(
-                {"email": acc["email"]},
-                {
-                    "$set": {
-                        "password_hash": _hash(acc["password"]),
-                        "role": acc["role"],
-                        "verified": acc.get("verified", False),
-                        "org_name": acc.get("org_name"),
-                        "name": acc["name"],
-                    }
-                },
-            )
-            continue
-        await db.users.insert_one({
-            "user_id": f"user_{uuid4().hex[:12]}",
-            "email": acc["email"],
-            "name": acc["name"],
-            "role": acc["role"],
-            "picture": None,
-            "verified": acc.get("verified", False),
-            "org_name": acc.get("org_name"),
-            "auth_provider": "password",
-            "password_hash": _hash(acc["password"]),
-            "created_at": datetime.now(timezone.utc).isoformat(),
-        })
+        try:
+            existing = _find_user_by_email(acc["email"])
+            if existing:
+                uid = existing["id"]
+                # ensure password is Demo1234! (re-sync so tests always work)
+                try:
+                    sb.auth.admin.update_user_by_id(uid, {"password": acc["password"], "email_confirm": True, "user_metadata": {"name": acc["name"]}})
+                except Exception as exc:
+                    logger.warning("could not update demo user %s: %s", acc["email"], exc)
+            else:
+                created = sb.auth.admin.create_user({
+                    "email": acc["email"],
+                    "password": acc["password"],
+                    "email_confirm": True,
+                    "user_metadata": {"name": acc["name"]},
+                })
+                uid = created.user.id if created and created.user else None
+                if not uid:
+                    logger.error("failed to create demo user %s", acc["email"])
+                    continue
 
-
-async def ensure_indexes():
-    await db.users.create_index("email", unique=True)
-    await db.users.create_index("user_id", unique=True)
-    await db.cases.create_index("case_id", unique=True)
-    await db.cases.create_index([("type", 1), ("status", 1), ("created_at", -1)])
-    await db.matches.create_index([("case_id", 1), ("score", -1)])
-    await db.notifications.create_index([("user_id", 1), ("created_at", -1)])
-    await db.messages.create_index([("conversation_id", 1), ("created_at", 1)])
-    await db.user_sessions.create_index("session_token", unique=True)
-    await db.audit_logs.create_index([("created_at", -1)])
+            # upsert profile row with role & verified
+            sb.table("profiles").upsert({
+                "user_id": uid,
+                "email": acc["email"],
+                "name": acc["name"],
+                "role": acc["role"],
+                "verified": acc["verified"],
+                "org_name": acc["org_name"],
+            }, on_conflict="user_id").execute()
+        except Exception as exc:
+            logger.exception("seed error for %s: %s", acc["email"], exc)

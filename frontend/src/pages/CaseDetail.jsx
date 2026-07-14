@@ -87,7 +87,7 @@ export default function CaseDetail() {
         {c.photos?.length ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {c.photos.map((p, i) => (
-              <div key={i} className="aspect-square rounded-lg overflow-hidden bg-muted"><img src={p.data_url} alt="" className="h-full w-full object-cover" /></div>
+              <div key={i} className="aspect-square rounded-lg overflow-hidden bg-muted"><img src={p.url || p.data_url} alt="" className="h-full w-full object-cover" /></div>
             ))}
           </div>
         ) : null}

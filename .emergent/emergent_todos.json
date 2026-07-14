@@ -1,42 +1,34 @@
 [
   {
-    "content": "Phase 1: Get Emergent Google OAuth integration playbook",
+    "content": "Install supabase-py backend + @supabase/supabase-js frontend; update .env files",
     "status": "completed"
   },
   {
-    "content": "Phase 2: Get design guidelines from design_agent",
+    "content": "Generate complete SQL migration file (tables + RLS + storage buckets + indexes + FTS)",
     "status": "completed"
   },
   {
-    "content": "Phase 2: Install additional libraries (leaflet, react-leaflet, marker-cluster, fuzzysort, pyjwt, bcrypt)",
+    "content": "Rewrite backend: deps.py, auth.py, cases.py, messaging.py, admin.py, seed.py to use Supabase (drop Mongo)",
     "status": "completed"
   },
   {
-    "content": "Phase 2: Backend implementation - auth, models, RBAC, CRUD",
+    "content": "Rewrite frontend auth: supabase.js client, auth.jsx, Login.jsx, Register.jsx, AuthCallback.jsx",
     "status": "completed"
   },
   {
-    "content": "Phase 2: Backend implementation - search, matching, messaging, notifications, admin, audit",
+    "content": "Localize to India (map defaults, examples, IST) and fix Leaflet rendering (invalidateSize + container height)",
     "status": "completed"
   },
   {
-    "content": "Phase 2: Frontend implementation - shell, routing, auth pages, home/map browse",
+    "content": "Configure CORS + env for Render (backend) + Vercel (frontend) + Supabase; write DEPLOY.md",
     "status": "completed"
   },
   {
-    "content": "Phase 2: Frontend implementation - report wizard, case details, dashboards, messaging, admin",
-    "status": "completed"
-  },
-  {
-    "content": "Phase 2: All user stories covered - E2E testing with testing_agent_v3 (100% backend, 95% frontend)",
-    "status": "completed"
-  },
-  {
-    "content": "Phase 2: Fix all bugs from testing (testing agent pre-fixed dialog z-index + message ObjectId)",
-    "status": "completed"
-  },
-  {
-    "content": "Phase 2: Deliver and finish",
+    "content": "USER ACTION REQUIRED: Run SQL migration in Supabase SQL Editor",
     "status": "in_progress"
+  },
+  {
+    "content": "After migration: backend seeds users; test end-to-end",
+    "status": "pending"
   }
 ]

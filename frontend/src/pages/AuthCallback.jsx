@@ -1,34 +1,27 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '@/lib/api';
-import { useAuth } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 import { PawPrint } from 'lucide-react';
 
 export default function AuthCallback() {
   const nav = useNavigate();
-  const { setUser } = useAuth();
-  const processed = useRef(false);
 
   useEffect(() => {
-    // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
-    if (processed.current) return; processed.current = true;
-    const hash = window.location.hash || '';
-    const params = new URLSearchParams(hash.replace(/^#/, ''));
-    const sessionId = params.get('session_id');
-    if (!sessionId) { nav('/login', { replace: true }); return; }
+    let t;
     (async () => {
-      try {
-        const { data } = await api.post('/auth/oauth/session', { session_id: sessionId });
-        setUser(data.user);
-        // Clear hash to avoid re-processing
-        window.history.replaceState(null, '', '/dashboard');
-        nav('/dashboard', { replace: true, state: { user: data.user } });
-      } catch (e) {
-        nav('/login', { replace: true, state: { error: 'OAuth session invalid' } });
-      }
+      // supabase-js auto-processes the URL hash when detectSessionInUrl=true
+      // just wait briefly then decide where to go.
+      t = setTimeout(async () => {
+        const { data } = await supabase.auth.getSession();
+        if (data?.session) {
+          nav('/dashboard', { replace: true });
+        } else {
+          nav('/login', { replace: true, state: { error: 'OAuth session invalid' } });
+        }
+      }, 400);
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    return () => t && clearTimeout(t);
+  }, [nav]);
 
   return (
     <div className="min-h-[60vh] grid place-items-center">

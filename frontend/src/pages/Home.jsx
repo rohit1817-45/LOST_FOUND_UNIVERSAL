@@ -31,7 +31,7 @@ export default function Home({ onReport }) {
               Community. NGOs. Police. One trusted network.
             </div>
             <h1 className="mt-4 text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight">Bringing families back together.</h1>
-            <p className="mt-4 text-lg text-muted-foreground max-w-[60ch]">Report a lost or found pet, or a missing or found person. ULFN routes your report to nearby citizens, verified NGOs, and law enforcement — and intelligently matches lost with found in seconds.</p>
+            <p className="mt-4 text-lg text-muted-foreground max-w-[60ch]">Report a lost or found pet, or a missing or found person in India. ULFN routes your report to nearby citizens, verified NGO shelters, and police stations — and intelligently matches lost with found in seconds.</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button size="lg" onClick={onReport} data-testid="hero-report-button">Report now</Button>
               <Button size="lg" variant="outline" onClick={() => nav('/browse')} data-testid="hero-browse-button"><MapPin className="h-4 w-4 mr-2" />Browse the map</Button>

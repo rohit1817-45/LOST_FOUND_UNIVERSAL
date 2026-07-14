@@ -29,11 +29,6 @@ function AppShell() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const { user } = useAuth() || {};
 
-  // Handle OAuth callback fragment on any route
-  if (location.hash?.includes('session_id=')) {
-    return <AuthCallback />;
-  }
-
   const openWizard = () => setWizardOpen(true);
 
   return (

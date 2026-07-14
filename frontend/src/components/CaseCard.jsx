@@ -10,7 +10,7 @@ export function CaseCard({ item, onClick }) {
   const lost = isLost(item.type);
   const person = isPerson(item.type);
   const Icon = person ? UserIcon : item.species?.toLowerCase() === 'cat' ? Cat : Dog;
-  const photo = item.photos?.[0]?.data_url;
+  const photo = item.photos?.[0]?.url || item.photos?.[0]?.data_url;
   return (
     <Link
       to={`/cases/${item.case_id}`}

@@ -1,4 +1,4 @@
-"""ULFN backend entrypoint."""
+"""ULFN backend entrypoint (Supabase edition)."""
 from __future__ import annotations
 
 import logging
@@ -12,12 +12,12 @@ from starlette.middleware.cors import CORSMiddleware
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
-from admin import router as admin_router  # noqa: E402
-from auth import router as auth_router  # noqa: E402
-from cases import router as cases_router  # noqa: E402
-from deps import db  # noqa: E402
+from admin import router as admin_router          # noqa: E402
+from auth import router as auth_router            # noqa: E402
+from cases import router as cases_router          # noqa: E402
+from deps import sb                               # noqa: E402
 from messaging import router as messaging_router  # noqa: E402
-from seed import ensure_indexes, seed_users  # noqa: E402
+from seed import seed_users, verify_schema        # noqa: E402
 
 app = FastAPI(title="ULFN — Universal Lost & Found Network")
 
@@ -26,14 +26,14 @@ api_router = APIRouter(prefix="/api")
 
 @api_router.get("/")
 async def root():
-    return {"message": "ULFN API online", "service": "ulfn", "version": "1.0.0"}
+    return {"message": "ULFN API online", "service": "ulfn", "version": "2.0.0-supabase"}
 
 
 @api_router.get("/health")
 async def health():
     try:
-        await db.command("ping")
-        return {"ok": True}
+        sb.table("profiles").select("user_id", count="exact").limit(1).execute()
+        return {"ok": True, "db": "supabase"}
     except Exception as exc:
         return {"ok": False, "error": str(exc)}
 
@@ -48,7 +48,7 @@ app.include_router(api_router)
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get("CORS_ORIGINS", "*").split(","),
+    allow_origins=[o.strip() for o in os.environ.get("CORS_ORIGINS", "*").split(",") if o.strip()] or ["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -59,13 +59,16 @@ logger = logging.getLogger("ulfn")
 
 @app.on_event("startup")
 async def _startup():
-    logger.info("ULFN starting: ensuring indexes and seeding demo users...")
-    try:
-        await ensure_indexes()
-        await seed_users()
-        logger.info("ULFN ready.")
-    except Exception as exc:
-        logger.exception("Startup failed: %s", exc)
+    logger.info("ULFN starting (Supabase edition)...")
+    ok = await verify_schema()
+    if ok:
+        try:
+            await seed_users()
+            logger.info("ULFN ready. Demo accounts seeded.")
+        except Exception as exc:
+            logger.exception("Seed failed: %s", exc)
+    else:
+        logger.warning("ULFN started, but Supabase schema is missing. Run migrations, then restart.")
 
 
 @app.on_event("shutdown")

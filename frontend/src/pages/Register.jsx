@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { PawPrint } from 'lucide-react';
 
 export default function Register() {
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const nav = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -17,21 +17,16 @@ export default function Register() {
   const [busy, setBusy] = useState(false);
 
   const submit = async (e) => {
-    e.preventDefault();
-    setBusy(true);
+    e.preventDefault(); setBusy(true);
     try {
       await register(name, email, password);
       nav('/dashboard', { replace: true });
     } catch (err) {
-      toast.error('Sign up failed', { description: err?.response?.data?.detail || 'Please try again.' });
+      toast.error('Sign up failed', { description: err?.message || 'Please try again.' });
     } finally { setBusy(false); }
   };
 
-  const googleLogin = () => {
-    // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
-    const redirectUrl = window.location.origin + '/dashboard';
-    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
-  };
+  const googleLogin = async () => { try { await loginWithGoogle(); } catch (e) { toast.error('Google sign-in failed'); } };
 
   return (
     <div className="min-h-[calc(100vh-64px)] grid place-items-center px-4">
@@ -44,18 +39,9 @@ export default function Register() {
           </div>
         </div>
         <form onSubmit={submit} className="space-y-3">
-          <div>
-            <Label>Full name</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} required data-testid="auth-name-input" />
-          </div>
-          <div>
-            <Label>Email</Label>
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required data-testid="auth-email-input" />
-          </div>
-          <div>
-            <Label>Password</Label>
-            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} data-testid="auth-password-input" />
-          </div>
+          <div><Label>Full name</Label><Input value={name} onChange={(e) => setName(e.target.value)} required data-testid="auth-name-input" /></div>
+          <div><Label>Email</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required data-testid="auth-email-input" /></div>
+          <div><Label>Password</Label><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} data-testid="auth-password-input" /></div>
           <Button type="submit" className="w-full" disabled={busy} data-testid="auth-register-submit">{busy ? 'Creating account…' : 'Create account'}</Button>
         </form>
         <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground"><div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" /></div>

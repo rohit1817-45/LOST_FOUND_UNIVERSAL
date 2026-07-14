@@ -1,55 +1,85 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 
 const AuthCtx = createContext(null);
+
+async function fetchProfile() {
+  try {
+    const { data } = await api.get('/auth/me');
+    return data;
+  } catch {
+    return null;
+  }
+}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const checkAuth = useCallback(async () => {
-    try {
-      const { data } = await api.get('/auth/me');
-      setUser(data);
-    } catch (e) {
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data?.session) {
+        const p = await fetchProfile();
+        if (mounted) setUser(p);
+      }
+      if (mounted) setLoading(false);
+    })();
+    const { data: sub } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+      if (session) {
+        const p = await fetchProfile();
+        if (mounted) setUser(p);
+      } else {
+        setUser(null);
+      }
+    });
+    return () => { mounted = false; sub.subscription?.unsubscribe?.(); };
   }, []);
 
-  useEffect(() => {
-    // CRITICAL: If returning from OAuth callback, skip the /me check.
-    // AuthCallback will exchange the session_id and establish the session first.
-    if (typeof window !== 'undefined' && window.location.hash?.includes('session_id=')) {
-      setLoading(false);
-      return;
-    }
-    checkAuth();
-  }, [checkAuth]);
-
   const loginEmail = async (email, password) => {
-    const { data } = await api.post('/auth/login', { email, password });
-    localStorage.setItem('ulfn_token', data.token);
-    setUser(data.user);
-    return data.user;
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    const p = await fetchProfile();
+    setUser(p);
+    return p;
   };
 
   const register = async (name, email, password) => {
-    const { data } = await api.post('/auth/register', { name, email, password });
-    localStorage.setItem('ulfn_token', data.token);
-    setUser(data.user);
-    return data.user;
+    const { error } = await supabase.auth.signUp({ email, password, options: { data: { name } } });
+    if (error) throw error;
+    // Depending on Supabase settings, sign-in may or may not be automatic.
+    const { data } = await supabase.auth.getSession();
+    if (!data?.session) {
+      // try password login (works if email confirmation is disabled in Supabase project settings)
+      const { error: err2 } = await supabase.auth.signInWithPassword({ email, password });
+      if (err2) throw err2;
+    }
+    const p = await fetchProfile();
+    setUser(p);
+    return p;
+  };
+
+  const loginWithGoogle = async () => {
+    const redirectTo = window.location.origin + '/auth/callback';
+    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
+    if (error) throw error;
   };
 
   const logout = async () => {
-    try { await api.post('/auth/logout'); } catch {}
-    localStorage.removeItem('ulfn_token');
+    await supabase.auth.signOut();
     setUser(null);
   };
 
+  const refresh = async () => {
+    const p = await fetchProfile();
+    setUser(p);
+  };
+
   return (
-    <AuthCtx.Provider value={{ user, loading, loginEmail, register, logout, refresh: checkAuth, setUser }}>
+    <AuthCtx.Provider value={{ user, loading, loginEmail, register, loginWithGoogle, logout, refresh, setUser }}>
       {children}
     </AuthCtx.Provider>
   );
