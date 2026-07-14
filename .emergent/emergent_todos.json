@@ -1,0 +1,38 @@
+[
+  {
+    "content": "Phase 1: Get Emergent Google OAuth integration playbook",
+    "status": "in_progress"
+  },
+  {
+    "content": "Phase 2: Get design guidelines from design_agent",
+    "status": "pending"
+  },
+  {
+    "content": "Phase 2: Backend implementation - auth, models, RBAC, CRUD",
+    "status": "pending"
+  },
+  {
+    "content": "Phase 2: Backend implementation - search, matching, messaging, notifications, admin, audit",
+    "status": "pending"
+  },
+  {
+    "content": "Phase 2: Frontend implementation - shell, routing, auth pages, home/map browse",
+    "status": "pending"
+  },
+  {
+    "content": "Phase 2: Frontend implementation - report wizard, case details, dashboards, messaging, admin",
+    "status": "pending"
+  },
+  {
+    "content": "Phase 2: All user stories covered - E2E testing with testing_agent_v3",
+    "status": "pending"
+  },
+  {
+    "content": "Phase 2: Fix all bugs from testing",
+    "status": "pending"
+  },
+  {
+    "content": "Phase 2: Deliver and finish",
+    "status": "pending"
+  }
+]
