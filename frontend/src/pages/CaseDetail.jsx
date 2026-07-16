@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -25,16 +25,22 @@ export default function CaseDetail() {
   const [sending, setSending] = useState(false);
   const [statusPick, setStatusPick] = useState('');
 
-  const load = async () => {
+
+  const load = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await api.get(`/cases/${id}`);
-      setData(data);
-    } catch (e) {
-      toast.error('Case not found');
-    } finally { setLoading(false); }
-  };
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [id]);
+          const { data } = await api.get(`/cases/${id}`);
+          setData(data);
+      } catch (e) {
+          toast.error("Case not found");
+      } finally {
+          setLoading(false);
+      }
+  }, [id]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+      load();
+  }, [load]);
 
   if (loading) return <div className="p-12 text-center text-muted-foreground">Loading…</div>;
   if (!data) return <div className="p-12 text-center">Case not found</div>;

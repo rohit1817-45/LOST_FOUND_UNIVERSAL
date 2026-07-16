@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { Card } from '@/components/ui/card';
@@ -20,10 +20,26 @@ export default function Messages() {
   const [attach, setAttach] = useState(null);
   const endRef = useRef(null);
 
-  const loadConvs = async () => { try { const { data } = await api.get('/conversations'); setConvs(data.items || []); if (!current && data.items?.[0]) setCurrent(data.items[0]); } catch {} };
+  const loadConvs = useCallback(async () => {
+    try {
+        const { data } = await api.get("/conversations");
+
+        setConvs(data.items || []);
+
+        if (!current && data.items?.[0]) {
+            setCurrent(data.items[0]);
+        }
+    } catch {}
+  }, [current]);
   const loadMsgs = async (conv) => { if (!conv) return; try { const { data } = await api.get(`/conversations/${conv.conversation_id}/messages`); setMessages(data.messages || []); } catch {} };
 
-  useEffect(() => { loadConvs(); const t = setInterval(loadConvs, 15000); return () => clearInterval(t); }, []);
+  useEffect(() => {
+    loadConvs();
+
+    const t = setInterval(loadConvs, 15000);
+
+    return () => clearInterval(t);
+  }, [loadConvs]);
   useEffect(() => { loadMsgs(current); }, [current]);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
