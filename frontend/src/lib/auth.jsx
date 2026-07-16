@@ -6,9 +6,23 @@ const AuthCtx = createContext(null);
 
 async function fetchProfile() {
   try {
-    const { data } = await api.get('/auth/me');
+    const { data } = await api.get("/auth/me");
     return data;
-  } catch {
+  } catch (error) {
+
+    console.error("========== FETCH PROFILE FAILED ==========");
+    console.error("Message:", error.message);
+
+    if (error.response) {
+      console.error("Status:", error.response.status);
+      console.error("Response:", error.response.data);
+    } else if (error.request) {
+      console.error("No response received from backend.");
+      console.error(error.request);
+    } else {
+      console.error(error);
+    }
+
     return null;
   }
 }
