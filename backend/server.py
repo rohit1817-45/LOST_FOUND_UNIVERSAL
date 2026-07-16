@@ -45,10 +45,17 @@ api_router.include_router(admin_router)
 
 app.include_router(api_router)
 
+origins = [
+    "http://localhost:3000",
+    "https://lost-found-universal.vercel.app",
+    "https://lost-found-universal-j5azcfni5-ra37.vercel.app",
+    "https://lost-found-universal.vercel.apps",
+]
+
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=origins,
     allow_credentials=True,
-    allow_origins=[o.strip() for o in os.environ.get("CORS_ORIGINS", "*").split(",") if o.strip()] or ["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
