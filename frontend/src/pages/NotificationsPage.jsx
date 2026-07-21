@@ -42,7 +42,7 @@ export default function NotificationsPage() {
         <Card className="p-10 text-center text-muted-foreground">Nothing here yet.</Card>
       ) : (
         items.map((n) => (
-          <Link key={n.notif_id} to={n.case_id ? `/cases/${n.case_id}` : '/messages'}>
+          <Link key={n.notif_id} to={n.conversation_id ? `/messages?c=${n.conversation_id}` : n.case_id ? `/cases/${n.case_id}` : '/notifications'}>
             <Card className={`p-4 hover:bg-muted transition-colors ${!n.read_at ? 'border-primary/40' : ''}`}>
               <div className="flex items-start justify-between gap-3">
                 <div>

@@ -139,7 +139,9 @@ async def list_cases(
 
     total_res = sb.table("cases").select("case_id", count="exact").limit(1).execute()
     total = total_res.count if getattr(total_res, "count", None) is not None else len(docs)
-    return {"items": docs, "total": total}
+    # NOTE: `total` reflects the total number of cases in the table; the RPC
+    # already applied filters+radius, so `docs` is the correctly paginated slice.
+    return {"items": docs, "total": total, "returned": len(docs)}
 
 
 @router.get("/mine")

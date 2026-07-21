@@ -59,7 +59,7 @@ export function NotificationBell() {
           <div className="p-6 text-center text-sm text-muted-foreground">You're all caught up.</div>
         ) : (
           items.slice(0, 15).map((n) => (
-            <Link key={n.notif_id} to={n.case_id ? `/cases/${n.case_id}` : n.conversation_id ? '/messages' : '/notifications'} className={`block px-3 py-2 hover:bg-muted ${!n.read_at ? 'bg-muted/60' : ''}`}>
+            <Link key={n.notif_id} to={n.conversation_id ? `/messages?c=${n.conversation_id}` : n.case_id ? `/cases/${n.case_id}` : '/notifications'} className={`block px-3 py-2 hover:bg-muted ${!n.read_at ? 'bg-muted/60' : ''}`}>
               <div className="text-sm font-medium">{n.title}</div>
               {n.body && <div className="text-xs text-muted-foreground line-clamp-2">{n.body}</div>}
               <div className="text-[10px] text-muted-foreground mt-1">{timeAgo(n.created_at)}</div>

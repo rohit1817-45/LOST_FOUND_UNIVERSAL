@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { Card } from '@/components/ui/card';
@@ -12,6 +13,8 @@ import { toast } from 'sonner';
 
 export default function Messages() {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const targetConvId = searchParams.get('c');
   const [convs, setConvs] = useState([]);
   const [current, setCurrent] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -32,14 +35,23 @@ export default function Messages() {
       const { data } = await api.get('/conversations');
       const items = data?.items || [];
       setConvs(items);
-      // Auto-select the first conversation only if nothing selected yet.
-      setCurrent((prev) => prev || items[0] || null);
+      // Priority 1: honor ?c=<id> from a notification link so clicking a
+      // notification always opens THAT conversation (fixes "infinite loading"
+      // when the notification's conversation wasn't the first in the list).
+      // Priority 2: auto-select the first conversation if nothing is selected.
+      setCurrent((prev) => {
+        if (targetConvId) {
+          const match = items.find((c) => c.conversation_id === targetConvId);
+          if (match) return match;
+        }
+        return prev || items[0] || null;
+      });
     } catch (e) {
       console.error('[messages] loadConvs failed:', e?.response?.data || e?.message);
     } finally {
       setLoadingConvs(false);
     }
-  }, []);
+  }, [targetConvId]);
 
   const loadMsgs = useCallback(async (convId) => {
     if (!convId) return;

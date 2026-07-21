@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '@/lib/api';
+import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -39,10 +40,22 @@ export default function Browse() {
       params.set('limit', 120);
       const { data } = await api.get(`/cases?${params.toString()}`);
       setItems(data.items || []);
+    } catch (e) {
+      // Root cause of "Browse randomly becomes empty": this used to be a silent
+      // failure (try/finally, no catch). Now we surface it so the user knows
+      // and old items stay on screen instead of vanishing.
+      console.error('[browse] fetchList failed:', e?.response?.data || e?.message);
+      toast.error('Could not load reports', {
+        description: e?.response?.data?.detail || e?.message || 'Please retry in a moment.',
+      });
     } finally { setLoading(false); }
   }, [q, types, useRadius, center, radiusKm]);
 
-  useEffect(() => { fetchList(); }, [fetchList]);
+  // Debounce the search so typing doesn't fire an API request on every keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => { fetchList(); }, 300);
+    return () => clearTimeout(t);
+  }, [fetchList]);
 
   const useMyLocation = () => {
     navigator.geolocation?.getCurrentPosition((p) => {
