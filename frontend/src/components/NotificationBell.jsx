@@ -22,7 +22,9 @@ export function NotificationBell() {
         if (!mounted) return;
         setItems(data.items || []);
         setUnread(data.unread || 0);
-      } catch {}
+      } catch (e) {
+        console.error('[notifications-bell] load failed:', e?.response?.data || e?.message);
+      }
     };
     load();
     const t = setInterval(load, 20000);
@@ -30,7 +32,7 @@ export function NotificationBell() {
   }, [user]);
 
   const markAll = async () => {
-    try { await api.post('/notifications/read-all'); setUnread(0); setItems((x) => x.map((i) => ({ ...i, read_at: new Date().toISOString() }))); } catch {}
+    try { await api.post('/notifications/read-all'); setUnread(0); setItems((x) => x.map((i) => ({ ...i, read_at: new Date().toISOString() }))); } catch (e) { console.error('[notifications-bell] markAll failed:', e?.message); }
   };
 
   if (!user) return null;

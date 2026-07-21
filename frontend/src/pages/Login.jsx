@@ -24,7 +24,12 @@ export default function Login() {
       const to = loc.state?.from?.pathname || '/dashboard';
       nav(to, { replace: true });
     } catch (err) {
-      toast.error('Login failed', { description: err?.message || 'Check your credentials.' });
+      const isTimeout = err?.code === 'ECONNABORTED' || /timeout/i.test(err?.message || '');
+      toast.error('Login failed', {
+        description: isTimeout
+          ? 'The backend is waking up (Render free-tier cold start). Please retry in ~30s.'
+          : err?.message || 'Check your credentials.',
+      });
     } finally { setBusy(false); }
   };
 

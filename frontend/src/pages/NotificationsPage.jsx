@@ -8,9 +8,30 @@ import { toast } from 'sonner';
 
 export default function NotificationsPage() {
   const [items, setItems] = useState([]);
-  const load = async () => { try { const { data } = await api.get('/notifications'); setItems(data.items || []); } catch {} };
-  useEffect(() => { load(); }, []);
-  const readAll = async () => { await api.post('/notifications/read-all'); toast.success('Marked all read'); load(); };
+  const load = async () => {
+    try {
+      const { data } = await api.get('/notifications');
+      setItems(data.items || []);
+    } catch (e) {
+      console.error('[notifications] load failed:', e?.response?.data || e?.message);
+      toast.error('Could not load notifications', { description: e?.response?.data?.detail || e?.message });
+    }
+  };
+  useEffect(() => {
+    load();
+    const t = setInterval(load, 30000);
+    return () => clearInterval(t);
+  }, []);
+  const readAll = async () => {
+    try {
+      await api.post('/notifications/read-all');
+      toast.success('Marked all read');
+      load();
+    } catch (e) {
+      console.error('[notifications] readAll failed:', e?.message);
+      toast.error('Could not mark notifications as read');
+    }
+  };
   return (
     <div className="container mx-auto px-4 sm:px-6 py-8 space-y-4 max-w-3xl">
       <div className="flex items-center justify-between">

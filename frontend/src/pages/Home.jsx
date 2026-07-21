@@ -16,8 +16,12 @@ export default function Home({ onReport }) {
 
   useEffect(() => {
     let mounted = true;
-    api.get('/cases?limit=8').then(({ data }) => { if (mounted) setItems(data.items || []); }).catch(() => {});
-    api.get('/admin/stats').then(({ data }) => { if (mounted) setStats(data); }).catch(() => { /* only admin can, ignore */ });
+    api.get('/cases?limit=8')
+      .then(({ data }) => { if (mounted) setItems(data.items || []); })
+      .catch((e) => { console.error('[home] recent cases failed:', e?.response?.data || e?.message); });
+    api.get('/admin/stats')
+      .then(({ data }) => { if (mounted) setStats(data); })
+      .catch(() => { /* non-admins are expected to get 403 here */ });
     return () => { mounted = false; };
   }, []);
 

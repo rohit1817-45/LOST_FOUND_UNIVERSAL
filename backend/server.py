@@ -48,13 +48,15 @@ app.include_router(api_router)
 origins = [
     "http://localhost:3000",
     "https://lost-found-universal.vercel.app",
-    "https://lost-found-universal-j5azcfni5-ra37.vercel.app",
-    "https://lost-found-universal.vercel.apps",
 ]
+# Allow any Vercel preview deployment (e.g. lost-found-universal-<hash>-<team>.vercel.app)
+# without needing to hardcode a new URL on every push.
+origin_regex = r"https://.*\.vercel\.app"
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
